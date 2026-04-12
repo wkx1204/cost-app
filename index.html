@@ -3,148 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>苏沪造价速算 V1.6-南京基准</title>
+<link rel="apple-touch-icon" href="https://img.icons8.com/fluency/180/calculator.png">
+<title>工程造价速算工具</title>
 <style>
- :root { --primary: #e63946; --bg: #f8f9fa; --dark: #1d3557; --gold: #ffb703; }
- * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
- body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 15px; margin: 0; color: #333; }
- .container { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 5px solid var(--primary); }
- h1 { font-size: 22px; text-align: center; margin: 0; color: var(--dark); }
- .version { text-align: center; font-size: 11px; color: #666; margin: 5px 0 20px 0; padding: 4px; background: #eee; border-radius: 4px; }
- 
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+ body { font-family: -apple-system, sans-serif; background: #f5f6fa; padding: 15px; }
+ .container { max-width: 520px; margin: 0 auto; }
+ .header { text-align: center; margin-bottom: 15px; }
+ h1 { color: #1a1a2e; font-size: 22px; margin-bottom: 4px; }
+ .timestamp { font-size: 11px; color: #ef4444; font-weight: bold; background: #fee2e2; display: inline-block; padding: 2px 8px; border-radius: 4px; }
+ .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.05); margin-bottom: 15px; }
  .group { margin-bottom: 15px; }
- label { display: block; font-size: 13px; margin-bottom: 6px; color: #666; font-weight: bold; }
- select, input { 
- width: 100%; height: 50px; border: 2px solid #edf2f4; border-radius: 12px; 
- padding: 0 12px; font-size: 16px; background: #fff; appearance: none; outline: none; transition: 0.3s;
- }
- select:focus, input:focus { border-color: var(--primary); }
+ label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
+ select, .area-input { width: 100%; height: 45px; border: 1.5px solid #eee; border-radius: 10px; padding: 0 12px; font-size: 15px; outline: none; background: #fafafa; }
+ select:disabled { background: #f0f0f0; color: #999; cursor: not-allowed; }
+ 
+ .stepper { display: flex; align-items: center; gap: 10px; }
+ .btn-step { width: 60px; height: 45px; background: #eee; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+ .btn-step:active { background: #4f6ef7; color: #fff; }
+ .input-val { flex: 1; height: 45px; text-align: center; font-weight: bold; color: #4f6ef7; border: 1.5px solid #eee; border-radius: 10px; background: #fafafa; line-height: 45px; }
 
- .btn-calc { 
- width: 100%; height: 55px; background: var(--primary); color: #fff; 
- border: none; border-radius: 15px; font-size: 18px; font-weight: bold; 
- margin-top: 10px; cursor: pointer;
- }
-
- #result { 
- display: none; margin-top: 20px; padding: 20px; background: var(--dark); 
- color: #fff; border-radius: 16px; text-align: center; border: 2px solid var(--gold);
- }
- .res-price { font-size: 38px; font-weight: 800; color: var(--gold); margin: 10px 0; }
- .copy-hint { font-size: 11px; color: #a8dadc; margin-top: 12px; }
+ .btn-calc { width: 100%; height: 55px; background: #4f6ef7; color: #fff; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 5px; }
+ .btn-calc:active { background: #3d5ce5; }
+ 
+ #result-card { display: none; margin-top: 15px; padding: 20px; background: #1a1c24; border-radius: 16px; color: #ffd700; text-align: center; }
+ .res-total { font-size: 34px; font-weight: 800; margin: 5px 0; }
+ 
+ .footer-notes { margin-top: 20px; padding: 15px; background: #fff; border-radius: 16px; border: 1px solid #eee; }
+ .note-title { border-left: 4px solid #4f6ef7; padding-left: 10px; margin-bottom: 12px; font-size: 14px; font-weight: bold; }
+ #deco-info-box { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid transparent; transition: all 0.2s; }
+ .info-tag { font-size: 12px; font-weight: 800; margin-bottom: 6px; }
+ .info-content { font-size: 12px; line-height: 1.7; color: #333; }
+ .basis-box { background: #f9f9f9; padding: 10px; border-radius: 8px; font-size: 11px; color: #777; line-height: 1.6; }
+ .disclaimer { text-align: center; font-size: 11px; color: #bbb; margin-top: 15px; font-style: italic; }
 </style>
 </head>
 <body>
 
 <div class="container">
- <h1>🏗️ 造价速算 (V1.6)</h1>
- <div class="version">核心基准：南京 2025Q3 亲测数据</div>
-
- <div class="group">
- <label>选择城市</label>
- <select id="city">
- <option value="上海">上海 (南京 × 1.04)</option>
- <option value="南京" selected>南京 (基准 1.00)</option>
- <option value="苏州">苏州 (南京 × 0.98)</option>
- <option value="无锡">无锡 (南京 × 0.96)</option>
- <option value="常州">常州 (南京 × 0.94)</option>
- <option value="镇江">镇江 (南京 × 0.92)</option>
- </select>
+ <div class="header">
+ <h1>🏗️ 工程造价速算</h1>
+ <div class="timestamp">V1.9 · 2026年04月13日</div>
  </div>
 
+ <div class="card">
+ <div class="group">
+ <label>项目城市</label>
+ <select id="city">
+ <option value="上海">上海</option><option value="南京" selected>南京</option>
+ <option value="苏州">苏州</option><option value="无锡">无锡</option>
+ <option value="常州">常州</option><option value="镇江">镇江</option>
+ </select>
+ </div>
+ <div class="group">
+ <label>数据年度</label>
+ <select id="year">
+ <option value="1.06">2026年 (预测趋势)</option>
+ <option value="1.03" selected>2025年 (当前拟合)</option>
+ <option value="1.00">2024年 (基准数据)</option>
+ <option value="0.96">2023年 (参考数据)</option>
+ <option value="0.93">2022年 (参考数据)</option>
+ <option value="0.91">2021年 (参考数据)</option>
+ <option value="0.88">2020年 (参考数据)</option>
+ </select>
+ </div>
  <div class="group">
  <label>工程类型</label>
- <select id="type">
- <option value="residential">普通住宅 (框架/剪力墙)</option>
+ <select id="type" onchange="updateFields()">
+ <option value="residential">普通住宅 (砖混/框架/剪力墙)</option>
  <option value="factory">钢结构厂房 (单层)</option>
  <option value="office">办公楼 (框架结构)</option>
- <option value="road">道路场地 (20cm混凝土)</option>
+ <option value="road">道路场地工程</option>
  </select>
  </div>
 
+ <div id="road-box" class="group" style="display:none;">
+ <label>道路规格</label>
+ <select id="road-spec">
+ <option value="120">素混凝土场地 15cm</option><option value="155">素混凝土场地 20cm</option>
+ <option value="275" selected>混凝土道路 20cm(含基)</option><option value="520">重型硬化场地 30cm</option>
+ </select>
+ </div>
+
+ <div id="build-box">
  <div class="group">
  <label>规格/楼层</label>
  <select id="floor">
- <option value="low">1-6层 (砖混/低层)</option>
- <option value="mid" selected>7-11层 (小高层框架)</option>
- <option value="high">12-18层 (高层剪力墙)</option>
+ <option value="low" id="opt-low">1-6层 (砖混结构)</option>
+ <option value="mid" id="opt-mid" selected>7-11层 (框架小高层)</option>
+ <option value="high" id="opt-high">12-18层 (剪力墙高层)</option>
  </select>
+ </div>
+ <div class="group">
+ <label>装修标准</label>
+ <select id="decorate" onchange="updateDecoInfo()">
+ <option value="1.0">毛坯标准 (1.0)</option>
+ <option value="1.25" selected>简易装修 (1.25)</option>
+ <option value="1.65">精装修 (1.65)</option>
+ </select>
+ </div>
+ <div class="group">
+ <label>水电安装选项</label>
+ <select id="install">
+ <option value="0">不含安装</option>
+ <option value="150">含水电安装 (+150)</option>
+ <option value="350">含机电消防 (+350)</option>
+ </select>
+ </div>
  </div>
 
  <div class="group">
  <label>建筑面积 (㎡)</label>
- <input type="number" id="area" placeholder="例如: 10000" inputmode="decimal">
+ <input type="number" id="area" placeholder="请输入数值" class="area-input">
  </div>
 
  <div class="group">
- <label>材料波动/其他修正 (%)</label>
- <input type="number" id="wave" value="0">
+ <label>材料波动系数 (%)</label>
+ <div class="stepper">
+ <button class="btn-step" onclick="changeWave(-1)">−</button>
+ <div id="wave" class="input-val">0%</div>
+ <button class="btn-step" onclick="changeWave(1)">+</button>
+ </div>
  </div>
 
- <button class="btn-calc" onclick="doCalculate()">核实版数据计算</button>
+ <button class="btn-calc" onclick="calculate()">立即估算</button>
+ </div>
 
- <div id="result" onclick="copyResult()">
- <div style="font-size: 14px; opacity: 0.8;">估算总造价</div>
- <div class="res-price">¥ <span id="total-val">0</span></div>
- <div style="font-size: 16px;">单价：¥ <span id="unit-val">0</span> /㎡</div>
- <div class="copy-hint">基于南京亲测数据校准 | 点击复制结果</div>
+ <div id="result-card" onclick="copyResult()">
+ <div style="font-size: 12px; opacity: 0.7;">估算总造价</div>
+ <div class="res-total">¥ <span id="res-total">0</span> 万</div>
+ <div style="font-size: 14px;">综合单价：¥ <span id="res-unit">0</span>/㎡</div>
+ </div>
+
+ <div class="footer-notes">
+ <div class="note-title">📑 交付标准实时详解</div>
+ <div id="deco-info-box">
+ <div class="info-tag" id="deco-tag">🏠 当前选择：简易装修</div>
+ <div class="info-content" id="deco-detail">普通地板/瓷砖，全屋乳胶漆，成品套装门，含基础集成吊顶及普通厨卫洁具。整洁明亮，配齐灯具开关，满足基础居住要求。</div>
+ </div>
+ <div class="basis-box">
+ <p>1. 已含 9%税金、7%管理费、5.5%利润。</p>
+ <p>2. 以南京为基准，关联苏沪宁城市差及年度指数。</p>
+ <p>3. 不含土地费、大门围墙，家电家具软装。</p>
+ </div>
+ <div class="disclaimer">⚠️ 以上价格仅供参考，不作为最终结算依据。</div>
  </div>
 </div>
 
 <script>
-function doCalculate() {
+let currentWave = 0;
+function changeWave(val) { 
+ currentWave += val; 
+ document.getElementById('wave').innerText = currentWave + '%'; 
+}
+
+function updateDecoInfo() {
+ const deco = document.getElementById('decorate').value;
+ const infoBox = document.getElementById('deco-info-box');
+ const tag = document.getElementById('deco-tag');
+ const detail = document.getElementById('deco-detail');
+ if (deco === "1.0") {
+ infoBox.style.backgroundColor = "#f8f9fa"; infoBox.style.borderColor = "#ddd";
+ tag.style.color = "#666"; tag.innerHTML = "🧱 当前选择：毛坯标准";
+ detail.innerHTML = "<b>核心包含：</b>结构体交付，内墙普通抹灰，仅入户防火门，不含任何内部门窗套及厨卫设施。<br><b>视觉状态：</b>\"灰盒子\"交付，原始水泥地面及管线点位外露。";
+ } else if (deco === "1.25") {
+ infoBox.style.backgroundColor = "#eef4ff"; infoBox.style.borderColor = "#4f6ef7";
+ tag.style.color = "#4f6ef7"; tag.innerHTML = "🏠 当前选择：简易装修";
+ detail.innerHTML = "<b>核心包含：</b>普通地板/瓷砖，全屋乳胶漆，成品套装门，含基础集成吊顶及普通厨卫洁具。<br><b>视觉状态：</b>整洁明亮，配齐灯具开关，满足基础居住要求。";
+ } else if (deco === "1.65") {
+ infoBox.style.backgroundColor = "#fff9db"; infoBox.style.borderColor = "#f59f00";
+ tag.style.color = "#a67316"; tag.innerHTML = "✨ 当前选择：精装修";
+ detail.innerHTML = "<b>核心包含：</b>造型吊顶，全屋定制木作(柜体)，品牌厨卫，部分背景墙装饰及高档石材/地材。<br><b>视觉状态：</b>样板间标准，工艺细节丰富，具有明显的质感。";
+ }
+}
+
+function updateFields() {
+ const type = document.getElementById('type').value;
+ const isRoad = type === 'road';
+ const isFactory = type === 'factory';
+ document.getElementById('road-box').style.display = isRoad ? 'block' : 'none';
+ document.getElementById('build-box').style.display = isRoad ? 'none' : 'block';
+ const floorSelect = document.getElementById('floor');
+ const decoSelect = document.getElementById('decorate');
+ if (isFactory) {
+ floorSelect.value = "low"; floorSelect.disabled = true;
+ document.getElementById('opt-low').textContent = "钢结构单层 (H<12m)";
+ decoSelect.value = "1.0"; decoSelect.disabled = true;
+ } else {
+ floorSelect.disabled = false;
+ document.getElementById('opt-low').textContent = "1-6层 (砖混结构)";
+ decoSelect.disabled = false;
+ }
+}
+
+function calculate() {
+ const area = parseFloat(document.getElementById('area').value) || 0;
+ if (area <= 0) return alert('请输入有效面积');
  const city = document.getElementById('city').value;
  const type = document.getElementById('type').value;
- const floor = document.getElementById('floor').value;
- const area = parseFloat(document.getElementById('area').value) || 0;
- const wave = 1 + (parseFloat(document.getElementById('wave').value) / 100);
-
- if (area <= 0) { alert('请输入面积'); return; }
-
- // --- 核心基准逻辑 (完全对齐南京核实数据) ---
- // 以南京 7-11层 框架住宅为锚点 = 1800 元/㎡
- let njBase = 0;
- if (type === 'residential') njBase = 1800; 
- if (type === 'factory') njBase = 1270; 
- if (type === 'office') njBase = 2650; 
- if (type === 'road') njBase = 275; 
-
- // --- 城市折减系数 (以南京为 1.0) ---
- const cityMap = { 
- "上海": 1.04, 
- "南京": 1.00, 
- "苏州": 0.98, 
- "无锡": 0.96, 
- "常州": 0.94, 
- "镇江": 0.92 
- };
+ const yearIdx = parseFloat(document.getElementById('year').value);
+ const wave = 1 + (currentWave / 100);
+ const deco = parseFloat(document.getElementById('decorate').value) || 1.0;
+ const install = parseFloat(document.getElementById('install').value) || 0;
+ let base = 1800;
+ if (type === 'factory') base = 1270;
+ if (type === 'office') base = 2650;
+ if (type === 'road') base = parseFloat(document.getElementById('road-spec').value);
+ const cityMap = { "上海":1.04, "南京":1.00, "苏州":0.98, "无锡":0.96, "常州":0.94, "镇江":0.92 };
  const cF = cityMap[city];
-
- // --- 结构规格修正 ---
- let sF = 1.0;
- if (type === 'residential') {
- if (floor === 'low') sF = 0.88; // 砖混
- if (floor === 'high') sF = 1.12; // 剪力墙
+ let fF = 1.0;
+ if (type !== 'road' && type !== 'factory') {
+ const floor = document.getElementById('floor').value;
+ if (floor === 'low') fF = 0.88;
+ if (floor === 'high') fF = 1.12;
  }
-
- // 最终单价计算
- const finalUnit = Math.round(njBase * cF * sF * wave);
- const finalTotal = (finalUnit * area / 10000).toFixed(2);
-
- document.getElementById('unit-val').textContent = finalUnit;
- document.getElementById('total-val').textContent = finalTotal + " 万";
- document.getElementById('result').style.display = 'block';
- document.getElementById('result').scrollIntoView({behavior: 'smooth'});
+ const unitPrice = Math.round((base * cF * yearIdx * fF * deco * wave) + install);
+ document.getElementById('res-unit').textContent = unitPrice;
+ document.getElementById('res-total').textContent = (unitPrice * area / 10000).toFixed(2);
+ document.getElementById('result-card').style.display = 'block';
 }
 
 function copyResult() {
- const u = document.getElementById('unit-val').textContent;
- const t = document.getElementById('total-val').textContent;
- const c = document.getElementById('city').value;
- const txt = `【造价速算-南京基准版】\n城市：${c}\n单价：¥${u}/㎡\n总价：${t}\n(注：此数据已根据南京核实案例校准)`;
- navigator.clipboard.writeText(txt).then(() => alert('已复制到剪贴板'));
+ const txt = `造价报告：\n城市：${document.getElementById('city').value}\n单价：¥${document.getElementById('res-unit').textContent}/㎡\n总价：${document.getElementById('res-total').textContent}万\n(价格仅供参考)`;
+ navigator.clipboard.writeText(txt).then(() => alert('已复制结果'));
 }
-</script>
 
+// 初始化：页面加载后立即渲染默认状态
+window.addEventListener('DOMContentLoaded', function() {
+ updateFields();
+ updateDecoInfo();
+});
+</script>
 </body>
 </html>
