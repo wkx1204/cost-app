@@ -17,7 +17,7 @@
  label { display: block; font-size: 13px; color: #666; margin-bottom: 8px; font-weight: 600; }
  select, .area-input { width: 100%; height: 45px; border: 1.5px solid #eee; border-radius: 10px; padding: 0 12px; font-size: 15px; outline: none; background: #fafafa; }
  select:disabled { background: #f0f0f0; color: #999; cursor: not-allowed; }
- 
+
  .stepper { display: flex; align-items: center; gap: 10px; }
  .btn-step { width: 60px; height: 45px; background: #eee; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
  .btn-step:active { background: #4f6ef7; color: #fff; }
@@ -25,10 +25,12 @@
 
  .btn-calc { width: 100%; height: 55px; background: #4f6ef7; color: #fff; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; cursor: pointer; margin-top: 5px; }
  .btn-calc:active { background: #3d5ce5; }
- 
+
  #result-card { display: none; margin-top: 15px; padding: 20px; background: #1a1c24; border-radius: 16px; color: #ffd700; text-align: center; }
- .res-total { font-size: 34px; font-weight: 800; margin: 5px 0; }
- 
+ .res-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
+ .res-range { font-size: 30px; font-weight: 800; margin: 4px 0 10px; letter-spacing: -0.5px; }
+ .res-unit { font-size: 14px; opacity: 0.9; margin-top: 6px; }
+
  .footer-notes { margin-top: 20px; padding: 15px; background: #fff; border-radius: 16px; border: 1px solid #eee; }
  .note-title { border-left: 4px solid #4f6ef7; padding-left: 10px; margin-bottom: 12px; font-size: 14px; font-weight: bold; }
  #deco-info-box { padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid transparent; transition: all 0.2s; }
@@ -130,9 +132,9 @@
  </div>
 
  <div id="result-card" onclick="copyResult()">
- <div style="font-size: 12px; opacity: 0.7;">估算总造价</div>
- <div class="res-total">¥ <span id="res-total">0</span> 万</div>
- <div style="font-size: 14px;">综合单价：¥ <span id="res-unit">0</span>/㎡</div>
+ <div class="res-label">估算总造价（万元）</div>
+ <div class="res-range"><span id="res-total-lo">0</span> ~ <span id="res-total-hi">0</span> 万</div>
+ <div class="res-unit">综合单价：¥ <span id="res-unit-lo">0</span> ~ <span id="res-unit-hi">0</span> /㎡</div>
  </div>
 
  <div class="footer-notes">
@@ -145,6 +147,7 @@
  <p>1. 已含 9%税金、7%管理费、5.5%利润。</p>
  <p>2. 以南京为基准，关联苏沪宁城市差及年度指数。</p>
  <p>3. 不含土地费、大门围墙，家电家具软装。</p>
+ <p>4. 区间为±5%等比例浮动，装修/波动越高，绝对差值越大。</p>
  </div>
  <div class="disclaimer">⚠️ 以上价格仅供参考，不作为最终结算依据。</div>
  </div>
@@ -152,9 +155,9 @@
 
 <script>
 let currentWave = 0;
-function changeWave(val) { 
- currentWave += val; 
- document.getElementById('wave').innerText = currentWave + '%'; 
+function changeWave(val) {
+ currentWave += val;
+ document.getElementById('wave').innerText = currentWave + '%';
 }
 
 function updateDecoInfo() {
@@ -217,18 +220,31 @@ function calculate() {
  if (floor === 'low') fF = 0.88;
  if (floor === 'high') fF = 1.12;
  }
- const unitPrice = Math.round((base * cF * yearIdx * fF * deco * wave) + install);
- document.getElementById('res-unit').textContent = unitPrice;
- document.getElementById('res-total').textContent = (unitPrice * area / 10000).toFixed(2);
+ // 1. 理论中心单价
+ const unitCenter = Math.round((base * cF * yearIdx * fF * deco * wave) + install);
+ // 2. ±5% 等比例区间
+ const unitLo = Math.round(unitCenter * 0.95);
+ const unitHi = Math.round(unitCenter * 1.05);
+ // 3. 总价区间
+ const totalLo = (unitLo * area / 10000).toFixed(2);
+ const totalHi = (unitHi * area / 10000).toFixed(2);
+ document.getElementById('res-unit-lo').textContent = unitLo;
+ document.getElementById('res-unit-hi').textContent = unitHi;
+ document.getElementById('res-total-lo').textContent = totalLo;
+ document.getElementById('res-total-hi').textContent = totalHi;
  document.getElementById('result-card').style.display = 'block';
 }
 
 function copyResult() {
- const txt = `造价报告：\n城市：${document.getElementById('city').value}\n单价：¥${document.getElementById('res-unit').textContent}/㎡\n总价：${document.getElementById('res-total').textContent}万\n(价格仅供参考)`;
+ const lo = document.getElementById('res-total-lo').textContent;
+ const hi = document.getElementById('res-total-hi').textContent;
+ const unitLo = document.getElementById('res-unit-lo').textContent;
+ const unitHi = document.getElementById('res-unit-hi').textContent;
+ const txt = `造价报告：\n城市：${document.getElementById('city').value}\n单价区间：¥${unitLo}~${unitHi}/㎡\n总价区间：${lo}~${hi}万\n(价格仅供参考，不作为最终结算依据)`;
  navigator.clipboard.writeText(txt).then(() => alert('已复制结果'));
 }
 
-// 初始化：页面加载后立即渲染默认状态
+// 初始化
 window.addEventListener('DOMContentLoaded', function() {
  updateFields();
  updateDecoInfo();
